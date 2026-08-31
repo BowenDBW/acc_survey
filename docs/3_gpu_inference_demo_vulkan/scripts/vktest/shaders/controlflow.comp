@@ -1,0 +1,10 @@
+#version 450
+#extension GL_EXT_control_flow_attributes : require
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer B { uint data[]; };
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    uint acc = 0u;
+    [[unroll]] for (uint i = 0u; i < 4u; ++i) { acc += i; }
+    data[id] = id + acc + 1u;
+}

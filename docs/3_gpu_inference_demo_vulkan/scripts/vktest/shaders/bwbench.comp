@@ -1,0 +1,25 @@
+#version 450
+
+// bwbench: 衡量 Adreno 740 的原始(粗粒度)读带宽。
+// 每个线程线性合并读取多个 float (跨度 = 总线程数), 结果累加后按 workgroup 写一个值。
+// 配置由 push constant 传入: x = 每个线程读取的元素数(按 4096 float 块为单位).
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 0, std430) buffer A { float a[]; };
+layout(binding = 1, std430) buffer O { float o[]; };
+
+layout(push_constant) uniform PC {
+    uint per_thread;
+} pc;
+
+void main() {
+    uint gid = gl_GlobalInvocationID.x;
+    uint total = gl_NumWorkGroups.x * 256u;
+    float acc = 0.0f;
+    for (uint rep = 0; rep < pc.per_thread; rep++) {
+        uint idx = rep * total + gid;
+        // 合并读取: 相邻线程访问相邻地址
+        acc += a[idx];
+    }
+    o[gl_WorkGroupID.x & 1023u] = acc;
+}

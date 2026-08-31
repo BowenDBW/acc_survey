@@ -1,0 +1,10 @@
+#version 450
+#extension GL_EXT_shader_16bit_storage : require
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer B { uint data[]; };
+layout(std430, binding = 1) buffer C { f16vec2 out16[]; };
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    data[id] = id + 1u;
+    out16[id] = f16vec2(vec2(float(id), 2.0));
+}

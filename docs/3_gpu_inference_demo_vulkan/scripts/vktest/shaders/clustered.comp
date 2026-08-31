@@ -1,0 +1,12 @@
+#version 450
+#extension GL_KHR_shader_subgroup_basic : require
+#extension GL_KHR_shader_subgroup_clustered : require
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer B { uint data[]; };
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    // 复刻 quantize_q8_1.comp 的 subgroup clustered 路径
+    float fmax = subgroupClusteredMax(float(id), 8);
+    float fsum = subgroupClusteredAdd(float(id), 8);
+    data[id] = id + uint(fmax) + uint(fsum) + 1u;
+}

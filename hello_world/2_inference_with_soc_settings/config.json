@@ -1,0 +1,33 @@
+{
+  "comment": "pin_cpu_freqs / pin_gpu_freq 的取值(小写字符串或数字): 0=不锁, max=最高档, min=最低档, 1..N=第几档(1=最低档), 或直接给 MHz 数值(如 2016 = 2.016GHz, 自动吸附到最近可用挡位)。脚本会自动去手机读可用频率表并换算成 kHz 写入, 无需手写 kHz。GPU 需 root 才能读档位表。",
+
+  "run": {
+    "label": "qwen3-4b-default",
+    "mode": "simple",
+    "model": "Qwen3-4B-Q4_K_M.gguf",
+    "prompt": "What is the capital of France? Answer in one short sentence.",
+    "n_gen": 64,
+    "n_ctx": 4096,
+    "threads": 8
+  },
+
+  "soc": {
+    "pin_cpu_freqs": {
+      "cpu0-2": 0,
+      "cpu3-6": 0,
+      "cpu7": 0
+    },
+    "pin_gpu_freq": 0,
+    "governor_after": "schedutil"
+  },
+
+  "sampling": {
+    "interval_ms": 100,
+    "idle_warmup_s": 5,
+    "idle_measure_s": 5
+  },
+
+  "power": {
+    "mode": "auto"
+  }
+}

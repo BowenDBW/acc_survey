@@ -1,0 +1,9 @@
+#version 450
+#extension GL_KHR_shader_subgroup_basic : require
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer B { uint data[]; };
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    // 用 subgroup invocation 保证路径真的走了 subgroup 特性
+    data[id] = id + gl_SubgroupInvocationID + 1u;
+}

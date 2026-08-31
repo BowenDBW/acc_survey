@@ -1,0 +1,20 @@
+#version 450
+
+// wgbench: 衡量 Adreno 740 每个 dispatch 的固定开销 vs workgroup 数。
+// 与 llama.cpp rms_norm 相同的 workgroup 尺寸 (512 线程), 每线程做一点读写,
+// 确保 dispatch 真实执行 (不会因无副作用被优化掉)。
+layout(local_size_x = 512, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 0, std430) buffer Data {
+    float out_val[];
+};
+
+void main() {
+    uint gid = gl_GlobalInvocationID.x;
+    // 与 rms_norm 量级相当的小循环, 让 workgroup 有真实(少量)计算
+    float acc = 0.0f;
+    for (uint i = 0; i < 16; i++) {
+        acc += float(gid) * 1.0000001f;
+    }
+    out_val[gid & 1023u] = acc;
+}

@@ -1,0 +1,12 @@
+#version 450
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
+#extension GL_EXT_shader_16bit_storage : require
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer B { uint data[]; };
+layout(std430, binding = 1) buffer C { u8vec4 out8[]; };
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    data[id] = id + 1u;
+    // 复刻 quantize_q8_1.comp 的 8 位路径: i8vec4 + pack32
+    out8[id] = u8vec4(id, id, id, id);
+}

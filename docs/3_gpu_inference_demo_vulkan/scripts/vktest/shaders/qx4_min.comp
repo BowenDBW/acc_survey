@@ -1,0 +1,46 @@
+// qx4_min.comp — 忠实复刻 quantize_q8_1_x4 (非subgroup) 的最小版本
+// 保留: shared mem 规约 + [[unroll]] + f16vec2 存储 + i8vec4 pack32 (OpCapability Int8)
+#version 450
+#extension GL_EXT_control_flow_attributes : require
+#extension GL_EXT_shader_16bit_storage : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
+layout(local_size_x = 32) in;
+layout(std430, binding = 0) readonly buffer A { vec4 data_a[]; };
+layout(std430, binding = 1) writeonly buffer D {
+    f16vec2 ds[4];
+    int qs[32];
+} data_b;
+shared float shmem[32];
+void main() {
+    const uint tid = gl_LocalInvocationID.x;
+    const uint wgid = gl_WorkGroupID.x;
+    const uint block_in_wg = tid / 8;
+    const uint ib = wgid * 4 + block_in_wg;
+    const uint iqs = tid % 8;
+    const uint ibx4_outer = ib / 4;
+    const uint ibx4_inner = ib % 4;
+    const uint a_idx = ib * 8 + iqs;
+    vec4 vals = a_idx < 128u ? data_a[a_idx] : vec4(0.0f);
+    const float thread_max = max(max(abs(vals.x), abs(vals.y)), max(abs(vals.z), abs(vals.w)));
+    shmem[tid] = thread_max;
+    barrier();
+    [[unroll]] for (uint s = 4; s > 0; s >>= 1) {
+        if (iqs < s) { shmem[tid] = max(shmem[tid], shmem[tid + s]); }
+        barrier();
+    }
+    const float amax = shmem[block_in_wg * 8];
+    const float d = amax / 127.0;
+    vals = round(vals * (d != 0.0 ? 1.0 / d : 0.0));
+    data_b.qs[ibx4_inner * 8 + iqs] = pack32(i8vec4(round(vals)));
+    const float thread_sum = vals.x + vals.y + vals.z + vals.w;
+    barrier();
+    shmem[tid] = thread_sum;
+    barrier();
+    [[unroll]] for (uint s = 4; s > 0; s >>= 1) {
+        if (iqs < s) { shmem[tid] += shmem[tid + s]; }
+        barrier();
+    }
+    if (iqs == 0) {
+        data_b.ds[ibx4_inner] = f16vec2(vec2(d, shmem[tid] * d));
+    }
+}

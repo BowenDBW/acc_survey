@@ -1,0 +1,53 @@
+# ============================================================
+# acc_survey — 项目根 .gitignore
+# 子仓库 / 大体积产物 / 运行结果 全部不入库
+# ============================================================
+
+# ---- 外部子仓库 (各自独立 git, 不入本仓库) ----
+/ElastiLM/
+/llama.cpp/
+/mllm/
+
+# ---- 大体积模型与编译产物 (可再生, 不入库) ----
+*.gguf
+*.gguf.json
+binaries/
+build-android/
+build*/
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# ---- 运行结果 / 日志 / 图片 (每次 run 生成) ----
+results/
+*.log
+*.csv
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+*.ipynb_checkpoints/
+
+# ---- 脚本临时文件 (04 脚本解析 config 时的临时 env 文件) ----
+.cfg_env.*
+
+# ---- IDE / 系统 ----
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Claude Code 本地配置 (含本机路径, 不入库) ----
+.claude/settings.local.json
