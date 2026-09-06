@@ -7,7 +7,8 @@
 /ElastiLM/
 /llama.cpp/
 /mllm/
-Xiaomi-HyperOS-BootLoader-Bypass
+/Xiaomi-HyperOS-BootLoader-Bypass/
+/ShadowNPU/
 
 # ---- 大体积模型与编译产物 (可再生, 不入库) ----
 *.gguf

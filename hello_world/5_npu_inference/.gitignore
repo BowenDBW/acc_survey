@@ -1,0 +1,7 @@
+# 5_npu_inference — 只保留调研文档与脚本，SDK/模型全部可再生，不入库
+models/
+bin/
+*.so
+*.gguf
+*.log
+results/
